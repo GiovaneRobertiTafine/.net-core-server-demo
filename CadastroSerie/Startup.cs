@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql;
 using CadastroSerie.DataAccess.DataObjects;
+using Microsoft.OpenApi.Models;
 
 namespace CadastroSerie
 {
@@ -37,7 +38,13 @@ namespace CadastroSerie
             //        .EnableDetailedErrors()       // <-- with debugging (remove for production).
             //);
             //services.AddDbContext<WorldContext>(db => db.UseMySql(Configuration.GetConnectionString("DefaultConnection"), Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.25-mysql")));
+            
+            
             services.AddControllers();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Teste", Version = "v1" });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,6 +62,14 @@ namespace CadastroSerie
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+
+            app.UseSwagger();
+
+            app.UseSwaggerUI(c =>
+            {
+                c.RoutePrefix = "swagger";
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
             });
         }
     }

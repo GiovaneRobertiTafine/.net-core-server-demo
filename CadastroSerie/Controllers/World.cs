@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace CadastroSerie.Controllers
@@ -30,9 +31,21 @@ namespace CadastroSerie.Controllers
 
         [HttpGet]
         [Route("cities")]
-        public IEnumerable<City> GetCities()
+        [ProducesResponseType(typeof(City), StatusCodes.Status200OK)]
+        [ProducesResponseType(500)]
+        public IActionResult GetCities()
         {
-            return this.context.Cities;
+            try
+            {
+                City[] cities = this.context.Cities.ToArray();
+
+                return Ok(cities);
+            }
+            catch (Exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+
         }
 
         [HttpGet]
@@ -40,31 +53,63 @@ namespace CadastroSerie.Controllers
         [ProducesResponseType(typeof(City), StatusCodes.Status200OK)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
-        public City GetCity(int id)
+        public IActionResult GetCity(int id)
         {
-            var cities = context.Cities.AsQueryable();
+            try
+            {
+                var cities = context.Cities.AsQueryable();
+                if (id != 0)
+                {
+                    City city = cities.FirstOrDefault(c => c.Id.Equals(id));
 
-            if (id.Equals(null))
+                    if (city == null)
+                    {
+                        return Ok(city);
+
+                    }
+                    else
+                    {
+                        return NotFound(new { message = "Não Encontrado" });
+                    }
+                }
+
+                return StatusCode((int)HttpStatusCode.BadRequest);
+            }
+            catch (Exception)
             {
-                return cities.FirstOrDefault(c => c.Id.Equals(id));
-            } else
-            {
-                return null;
+                return StatusCode((int)HttpStatusCode.InternalServerError);
             }
         }
 
         [HttpGet("city")]
-        public City GetCityName([FromQuery] string name)
+        [ProducesResponseType(typeof(City), StatusCodes.Status200OK)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public IActionResult GetCityName([FromQuery] string name)
         {
-            var cities = context.Cities.AsQueryable();
+            try
+            {
+                var cities = context.Cities.AsQueryable();
+                if (name != null)
+                {
+                    City city = cities.FirstOrDefault(c => c.Name.Equals(name));
 
-            if (name != null)
-            {
-                return cities.FirstOrDefault(c => c.Name.Equals(name));
+                    if (city != null)
+                    {
+                        return Ok(city);
+
+                    }
+                    else
+                    {
+                        return NotFound(new { message = "Não Encontrado" });
+                    }
+                }
+
+                return StatusCode((int)HttpStatusCode.BadRequest);
             }
-            else
+            catch (Exception)
             {
-                return null;
+                return StatusCode((int)HttpStatusCode.InternalServerError);
             }
         }
     }
